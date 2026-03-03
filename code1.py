@@ -83,7 +83,7 @@ def llm_node(state):
         "or 'summarize' an email. "
         "Be concise."
     ))
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state['messages'])#AImessage object is the response 
     return {
         'messages':state['messages']+[response]
     }
@@ -95,10 +95,10 @@ def router(state):
     # if no attr then it returns end to complete the graph
 
 
-tool_node = ToolNode([list_unread_emails , summarize_email])
+tool_node = ToolNode([list_unread_emails , summarize_email])#tool node has the tools bound to it 
 
 def tools_node(state):
-    result = tool_node.invoke(state)
+    result = tool_node.invoke(state)#result of the tool
     return {
         'messages':state['messages']+result['messages']
     }
@@ -130,3 +130,16 @@ if __name__ == "__main__":
         state['messages'].append({'role':'user', 'content':user_message})
         state=graph.invoke(state)
         print(state['messages'][-1].content,'\n')
+
+# chat state is class which defines the kind of data which will be present in the state 
+# state is nothing but a list called messages 
+# each message in the message contains query and response 
+# and each message will also contain the tool used to generate it , this happens as you bind the llm with the tools in line 77 
+# when llm.invoke(state) (line 86) is used a message called AImessage is generated and this contains the tool_calls attribute 
+# AImessage contains tool_calls attribute which has name , id etc 
+# and that ai message is added to the state as the most recent one 
+# if the tool_calls is empty for that message we go to end state 
+# if there is tool_calls present then we go to the tools node which has the tools that must be called bound to the node and this node can use the tools 
+# and that generates another message which is appended to the state of messages
+# it is called tool_message which has content , name of the tool called , tool_call_id which must match the id in the AImessage id 
+# this one is a recursive graph where the llm is called 2 times
