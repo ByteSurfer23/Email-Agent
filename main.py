@@ -56,6 +56,7 @@ def list_unread_emails():
     return response
 
 
+
 @tool
 def summarize_email(uid):
     """Summarize a single e-mail given it's IMAP UID. Return a short summary of the e-mails content / body in plain text."""

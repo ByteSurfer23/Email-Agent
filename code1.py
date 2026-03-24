@@ -8,7 +8,8 @@ from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph,START,END
-
+import streamlit as st
+from tools.blood_test.bt_ingest import process_uploaded_pdf
 
 load_dotenv()
 IMAP_HOST = os.getenv('IMAP_HOST')
@@ -22,10 +23,30 @@ CHAT_MODEL='qwen3:8b'
 class ChatState(TypedDict):
     messages:list
 
+
+uploaded_file = st.file_uploader("Upload Health Report (PDF)", type=["pdf"])
+
+if uploaded_file:
+
+    with st.spinner("Parsing PDF..."):
+        success, message, data = process_uploaded_pdf(uploaded_file)
+
+    if success:
+        st.success(message)
+        st.subheader("Extracted JSON")
+        st.json(data)
+    else:
+        st.error(message)
+
 def connect():
     mail_box = MailBox(IMAP_HOST)
     mail_box.login(IMAP_USER,IMAP_PASSWORD,initial_folder=IMAP_FOLDER)
     return mail_box
+
+
+
+
+
 @tool
 def list_unread_emails():
     """
@@ -46,6 +67,9 @@ def list_unread_emails():
     ])
     print(response)
     return response
+
+
+
 
 
 @tool
